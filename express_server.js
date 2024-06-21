@@ -2,6 +2,16 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
+const generateRandomString = () => {
+  let newString = ''
+  const alphaNumeric = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i2 = 0; i2 < 6; i2++){
+      const randomIndex = Math.floor(Math.random() * alphaNumeric.length);
+      newString += alphaNumeric[randomIndex];
+    }
+  return newString;
+}
+
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
@@ -34,6 +44,11 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]};
   res.render("urls_show", templateVars);
+});
+
+app.post("/urls", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
 
 app.listen(PORT, () => {
