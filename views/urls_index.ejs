@@ -14,11 +14,9 @@
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
-    <title>TinyApp</title>
+    <title>Tiny App</title>
   </head>
   <body>
-    <form method="POST" action="/urls/9sm5xK/delete">...</form>
-
     <!--TOP OF HEADER FILE CODE-->
     
     <%- include('partials/_headers')%>
@@ -30,17 +28,24 @@
       <table class="table">
         <thead>
           <tr>
-            <th scope="col">Short URL ID</th><!--perhaps here is where I add deletion buttons-->
+            <th scope="col">Short URL ID</th>
             <th scope="col">Long URL</th>
+            <th scope="col">Edit</th>
+            <th scope="col">Delete</th>
           </tr>
         </thead>
         <tbody>
-          <% for (let shortURL in urls) { %>
+          <% for (let url in urls) { %> <!-- the value after in cannot change here while the iterant can-->
             <tr>
-              <td><%= shortURL %></td>
-              <td><%= urls[shortURL].longURL %></td>
+              <td><%= url %></td>
+              <td><%= urls[url] %></td>
               <td>
-                <form method="POST" action="/urls/<%= shortURL %>/delete">
+                <form method="GET" action="/urls/<%= url %>">
+                  <button type="submit">Edit</button>
+                </form>
+              </td>
+              <td>
+                <form method="POST" action="/urls/<%= url %>/delete">
                   <button type="submit">Delete</button>
                 </form>
               </td>
