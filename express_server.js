@@ -57,10 +57,10 @@ app.post('/login', (req, res) => {
   res.redirect("/urls");
 });
 
-//app.get("/urls", (req, res) => {
-  
- 
-// });
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
+  res.redirect("urls"); 
+});
 
 app.post('/urls/:id', (req, res) => {
   const id = req.params.id;

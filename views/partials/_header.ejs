@@ -24,7 +24,9 @@
           <button type="submit">Login</button>
         </form>
         <% } else { %>
-        <p>You are Logged In As: || <%= username %></pp>
+        <p>You are Logged In As: || <%= username %></p>
+          <form method="POST" action="/logout">
+          <button type="submit">Logout</button>
         <% } %>
       </div>
     </div>
