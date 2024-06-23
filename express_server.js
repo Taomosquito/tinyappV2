@@ -41,17 +41,18 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]};
-  res.render("urls_show", templateVars);
-});
-
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const id = generateRandomString();
   urlDatabase[id] = longURL;
   res.redirect(`/urls/${id}`);
 });
+
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  res.cookie('username', username)
+  res.redirect("/urls");
+})
 
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
