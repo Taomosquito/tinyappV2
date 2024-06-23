@@ -2,7 +2,8 @@
 
 * This consists of server running file by the name express_server.js this is expected to be run with node express_server.js
 * This consists of a view directory and 3 different view pages by the name urls_index.ejs, urls_new.ejs, urls_show.ejs
-* This consists of a partials directory and a file within call _header.ejs this is used in conjunction with each of the three views files
+* This consists of a partials directory and a file within call _header.ejs this is used in conjunction with each of the three views files\
+* This doesn't include any CSS outside of the templated CSS or a database engine so all URLs are removed on server reboot.
 
 # Submission Details
 
