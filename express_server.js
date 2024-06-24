@@ -52,7 +52,7 @@ app.get('/urls/new', (req, res) => {
   res.render('urls_new');
 });
 
-// What to do when a post request reaches the /urls link
+// Handle POST requests to /urls
 app.post('/urls', (req, res) => {
   const longURL = req.body.longURL;
   const id = generateRandomString();
@@ -60,14 +60,14 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${id}`);
 });
 
-// What to do when the login functionality is accessed with a post request
+// Handle POST requests to /login
 app.post('/login', (req, res) => {
   const username = req.body.username;
   res.cookie('username', username);
   res.redirect("/urls");
 });
 
-// What to do when the logout functionality is accessed with a post request
+// Handle POST requests to /logout
 app.post("/logout", (req, res) => {
   res.clearCookie('username');
   res.redirect("/urls");
