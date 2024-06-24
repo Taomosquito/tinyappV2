@@ -70,7 +70,7 @@ app.post('/login', (req, res) => {
 // What to do when the logout functionality is accessed with a post request
 app.post("/logout", (req, res) => {
   res.clearCookie('username');
-  res.redirect("/urls"); 
+  res.redirect("/urls");
 });
 
 // First post request catch all behavior
@@ -97,7 +97,12 @@ app.get('/u/:id', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[req.params.id];
-  res.render('urls_show', { longURL, id } );
+  res.render('urls_show', { longURL, id });
+});
+
+// Makes the registration page available
+app.get('/register', (req, res) => {
+  res.render('register');
 });
 
 // Starts the server with all the  handlers having been set first.
