@@ -20,11 +20,26 @@ const generateRandomString = () => {
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 
-// Memory based database (only shows the precoded URLS here)
+// Memory based URL Management database (only shows the precoded URLS here)
 const urlDatabase = {
   b2xVn2: 'http://www.lighthouselabs.ca',
   '9sm5xK': "http://www.google.com",
 };
+
+// Memory based registered users database (only shows the precoded users {Admin users is good here})
+const users = {
+  admin: {
+    id: "admin",
+    email: "a.a@a.a",
+    password: "admin",
+  },
+  admin2: {
+    id: "admin2",
+    email: "b.b@b.b",
+    password: "admin2",
+  }
+};
+
 
 // Home route and subsequently not the one controlling the primary functionality
 app.get('/', (req, res) => {
@@ -49,8 +64,31 @@ app.get('/urls', (req, res) => {
 
 // What to do when the new route link is selected
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  res.render('urls_new', templateVars);
 });
+
+// Get request redirection to the actual link
+app.get('/u/:id', (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
+});
+
+// Used with the get request for edit
+app.get('/urls/:id', (req, res) => {
+  const id = req.params.id;
+  const longURL = urlDatabase[req.params.id];
+  const username = req.cookies["username"]
+  res.render('urls_show', { longURL, id, username });
+});
+
+// Makes the registration page available
+app.get('/register', (req, res) => {
+  res.render('register');
+});
+
+app.post('/register', (req, res) => {
+})
 
 // Handle POST requests to /urls
 app.post('/urls', (req, res) => {
@@ -60,12 +98,6 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${id}`);
 });
 
-// Handle POST requests to /login
-app.post('/login', (req, res) => {
-  const username = req.body.username;
-  res.cookie('username', username);
-  res.redirect("/urls");
-});
 
 // Handle POST requests to /logout
 app.post("/logout", (req, res) => {
@@ -87,22 +119,12 @@ app.post('/urls/:id/delete', (req, res) => {
   res.redirect(`/urls`);
 });
 
-// Get request redirection to the actual link
-app.get('/u/:id', (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
-});
-
-// Used with the get request for edit
-app.get('/urls/:id', (req, res) => {
-  const id = req.params.id;
-  const longURL = urlDatabase[req.params.id];
-  res.render('urls_show', { longURL, id });
-});
-
-// Makes the registration page available
-app.get('/register', (req, res) => {
-  res.render('register');
+// Handle POST requests to /login
+app.post('/login', (req, res) => {
+  const username = req.body.username;
+  console.log(username);
+  res.cookie('username', username);
+  res.redirect("/urls");
 });
 
 // Starts the server with all the  handlers having been set first.
