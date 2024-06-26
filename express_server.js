@@ -39,7 +39,15 @@ const users = {
     password: "admin2",
   }
 };
+const getUserByEmail = (email) => {
+  for (let userID in users) {
 
+    // Sad path that checks if the field has been filled out with new information
+    if (users[userID].email === email) {
+      return users[userID]
+    }
+  }
+}
 
 // Home route and subsequently not the one controlling the primary functionality
 app.get('/', (req, res) => {
@@ -58,13 +66,21 @@ app.get('/hello', (req, res) => {
 
 // What do to when the sites primary resource received a get request through this route handler
 app.get('/urls', (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  const { user_id } = req.cookies;
+  if (!users[user_id]) {
+    return res.redirect('/register');
+  }
+  const templateVars = { user: users[user_id], urls: urlDatabase };
   res.render('urls_index', templateVars);
 });
 
 // What to do when the new route link is selected
 app.get('/urls/new', (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  const { user_id } = req.cookies;
+  if (!users[user_id]) {
+    return res.redirect('/register');
+  }
+  const templateVars = { user: users[user_id], urls: urlDatabase };
   res.render('urls_new', templateVars);
 });
 
@@ -76,10 +92,14 @@ app.get('/u/:id', (req, res) => {
 
 // Used with the get request for edit
 app.get('/urls/:id', (req, res) => {
+  const { user_id } = req.cookies;
+  if (!users[user_id]) {
+    return res.redirect('/register');
+  }
   const id = req.params.id;
   const longURL = urlDatabase[req.params.id];
   const username = req.cookies["username"];
-  res.render('urls_show', { longURL, id, username });
+  res.render('urls_show', { longURL, id, user: users[user_id] });
 });
 
 // Makes the registration page available
@@ -88,28 +108,20 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-  const userList = Object.keys(users);
-  const userID = generateRandomString();
-  const email = req.body.email;
-  const password = req.body.password;
-  console.log(email);
-  console.log(password);
-  for (let user of userList) {
-    // Sad path that checks if the field has been filled out completely
-    if (!email || !password) {
-      res.status(400);
-      return res.send('Incomplete Registration Such As Missing Email Or Password');
-    }
-    // Sad path that checks if the field has been filled out with new information
-    if (users[user].email === email || users[user].password === password) {
-      res.status(400);
-      return res.send('Invalid Registration Such As Used Email Or Password');
-    }
-    // Happy path the information is both new and fully filled out
-    users[userID] = {userID, email, password,};
-    res.cookie('user_id', userID);
-    res.redirect('/urls');
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).send('Incomplete Registration Such As Missing Email Or Password');
   }
+
+  const userExists = getUserByEmail(email);
+  if (userExists) {
+    return res.status(400).send('Account Already Exists')
+  }
+
+  const id = generateRandomString();
+  users[id] = { id, email, password, };
+  res.cookie('user_id', id);
+  res.redirect('/urls');
 });
 
 // Handle POST requests to /urls
@@ -143,24 +155,23 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // Handle POST requests to /login
 app.post('/login', (req, res) => {
-  const userList = Object.keys(users);
-  const username = req.body.username;
-  const password = req.body.password;
-  for (let user of userList) {
-    // Sad path that checks if the field has been filled out completely
-    if (!username || !password) {
-      res.status(400);
-      return res.send('Incomplete Login Attempt Such As Missing Email Or Password');
-    }
-    // Happy path the information is both new and fully filled out
-    if (users[user].email === username && users[user].password === password) {
-      res.cookie('username', username);
-      res.redirect("/urls");
-    }
-    res.status(400);
-    res.send('Incorrect Login Attempt Such As Missing Email Or Password');
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).send('Incomplete Login Attempt Such As Missing Email Or Password');
   }
 
+  const user = getUserByEmail(username);
+  if (!user) {
+    return res.status(401).send("invalid credentials");
+  }
+
+  const passwordMatch = user.password === password
+  if (!passwordMatch) {
+    return res.status(401).send("invalid credentials")
+  }
+
+  res.cookie('user_id', user.id)
+  res.redirect('/urls');
 });
 
 // Starts the server with all the  handlers having been set first.
