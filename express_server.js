@@ -78,7 +78,7 @@ app.get('/u/:id', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[req.params.id];
-  const username = req.cookies["username"]
+  const username = req.cookies["username"];
   res.render('urls_show', { longURL, id, username });
 });
 
@@ -94,23 +94,23 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
   console.log(email);
   console.log(password);
-  for (user of userList) {
+  for (let user of userList) {
     // Sad path that checks if the field has been filled out completely
     if (!email || !password) {
-      res.status(400)
-      return res.send('Incomplete Registration Such As Missing Email Or Password')
-     }
+      res.status(400);
+      return res.send('Incomplete Registration Such As Missing Email Or Password');
+    }
     // Sad path that checks if the field has been filled out with new information
-     if (users[user].email === email || users[user].password === password){
-      res.status(400)
-      return res.send('Invalid Registration Such As Used Email Or Password')
-     }
+    if (users[user].email === email || users[user].password === password) {
+      res.status(400);
+      return res.send('Invalid Registration Such As Used Email Or Password');
+    }
     // Happy path the information is both new and fully filled out
     users[userID] = {userID, email, password,};
     res.cookie('user_id', userID);
-    res.redirect('/urls')
+    res.redirect('/urls');
   }
-})
+});
 
 // Handle POST requests to /urls
 app.post('/urls', (req, res) => {
@@ -146,19 +146,19 @@ app.post('/login', (req, res) => {
   const userList = Object.keys(users);
   const username = req.body.username;
   const password = req.body.password;
-  for (user of userList) {
+  for (let user of userList) {
     // Sad path that checks if the field has been filled out completely
     if (!username || !password) {
-      res.status(400)
-      return res.send('Incomplete Login Attempt Such As Missing Email Or Password')
+      res.status(400);
+      return res.send('Incomplete Login Attempt Such As Missing Email Or Password');
     }
     // Happy path the information is both new and fully filled out
-    if (users[user].email === username && users[user].password === password){
+    if (users[user].email === username && users[user].password === password) {
       res.cookie('username', username);
       res.redirect("/urls");
-   }
-   res.status(400);
-   res.send('Incorrect Login Attempt Such As Missing Email Or Password');
+    }
+    res.status(400);
+    res.send('Incorrect Login Attempt Such As Missing Email Or Password');
   }
 
 });
