@@ -88,6 +88,28 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
+  const userList = Object.keys(users);
+  const userID = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  console.log(email);
+  console.log(password);
+  for (user of userList) {
+    // Sad path that checks if the field has been filled out completely
+    if (!email || !password) {
+      res.status(400)
+      return res.send('Incomplete Registration Such As Missing Email Or Password')
+     }
+    // Sad path that checks if the field has been filled out with new information
+     if (users[user].email === email || users[user].password === password){
+      res.status(400)
+      return res.send('Invalid Registration Such As Used Email Or Password')
+     }
+    // Happy path the information is both new and fully filled out
+    users[userID] = {userID, email, password,};
+    res.cookie('user_id', userID);
+    res.redirect('/urls')
+  }
 })
 
 // Handle POST requests to /urls
@@ -121,10 +143,24 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // Handle POST requests to /login
 app.post('/login', (req, res) => {
+  const userList = Object.keys(users);
   const username = req.body.username;
-  console.log(username);
-  res.cookie('username', username);
-  res.redirect("/urls");
+  const password = req.body.password;
+  for (user of userList) {
+    // Sad path that checks if the field has been filled out completely
+    if (!username || !password) {
+      res.status(400)
+      return res.send('Incomplete Login Attempt Such As Missing Email Or Password')
+    }
+    // Happy path the information is both new and fully filled out
+    if (users[user].email === username && users[user].password === password){
+      res.cookie('username', username);
+      res.redirect("/urls");
+   }
+   res.status(400);
+   res.send('Incorrect Login Attempt Such As Missing Email Or Password');
+  }
+
 });
 
 // Starts the server with all the  handlers having been set first.
