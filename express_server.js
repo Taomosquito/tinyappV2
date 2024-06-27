@@ -189,7 +189,7 @@ app.post('/urls', (req, res) => {
 // Handle POST requests to /logout
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id');
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 
@@ -214,7 +214,6 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // Handle POST requests to /login
 app.post('/login', (req, res) => {
-  console.log('POST /login');
   const { email, password } = req.body;
   const { isValid, error, user } = validateUserCredentials(email, password, users);
 
