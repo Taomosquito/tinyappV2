@@ -60,6 +60,17 @@ const getUserByEmail = (email) => {
   }
 };
 
+// Function to validate user credentials
+const validateUserCredentials = (email, password, users) => {
+  const user = getUserByEmail(email, users);
+  if (!user) {
+    return { isValid: false, error: "Invalid Username or password" };
+  }
+  if (user.password !== password) {
+    return { isValid: false, error: "Invalid Username or password" };
+  }
+  return { isValid: true, user };
+};
 
 
 // Home route and subsequently not the one controlling the primary functionality
@@ -130,14 +141,19 @@ app.get('/urls/:id', (req, res) => {
 
 // Makes the registration page available
 app.get('/register', (req, res) => {
-  res.render('register');
+  const user = users[req.cookies['user_id']];
+  const templateVars = { user };
+  res.render('register', templateVars);
 });
 
 
 // Handles the login route
 app.get('/login', (req, res) => {
-  res.render('login');
+  const user = users[req.cookies['user_id']];
+  const templateVars = { user };
+  res.render('login', templateVars);
 });
+
 
 
 // Handles the register route
@@ -198,19 +214,12 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // Handle POST requests to /login
 app.post('/login', (req, res) => {
+  console.log('POST /login');
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).send('Incomplete Login Attempt Such As Missing Email Or Password');
-  }
+  const { isValid, error, user } = validateUserCredentials(email, password, users);
 
-  const user = getUserByEmail(email);
-  if (!user) {
-    return res.status(401).send("invalid credentials");
-  }
-
-  const passwordMatch = user.password === password;
-  if (!passwordMatch) {
-    return res.status(401).send("invalid credentials");
+  if (!isValid) {
+    return res.status(403).send(error);
   }
 
   res.cookie('user_id', user.id);

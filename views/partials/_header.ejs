@@ -24,12 +24,8 @@
           <button type="submit">Logout</button>
           </form>
         <% } else { %>
-          <form method="GET" action="/Login">
-            <button type="submit">Login</button>
-          </form>
-          <form method="GET" action="/Register">
-            <button type="submit">Register</button>
-          </form>
+          <button onclick="window.location.href='/login'">Login</button>
+          <button onclick="window.location.href='/register'">Register</button>
         <% } %>
       </div>
     </div>
