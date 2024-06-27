@@ -22,11 +22,13 @@
           <p>You are Logged In As: || <%= user.email %></p>
           <form method="POST" action="/logout">
           <button type="submit">Logout</button>
+          </form>
         <% } else { %>
-          <form method="POST" action="/login">
-            <input type="text" id="user" name="username" placeholder="Email">
-            <input type="text" id="pass" name="password" placeholder="Password">
+          <form method="GET" action="/Login">
             <button type="submit">Login</button>
+          </form>
+          <form method="GET" action="/Register">
+            <button type="submit">Register</button>
           </form>
         <% } %>
       </div>
