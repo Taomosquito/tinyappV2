@@ -178,9 +178,20 @@ app.post('/register', (req, res) => {
 
 // Handle POST requests to /urls
 app.post('/urls', (req, res) => {
+  const userId = req.cookies['user_id'];
+
+  if (!userId || !users[userId]) {
+    console.log('User is not authenticated, redirecting to login');
+    return res.redirect('/login');
+  }
+
   const longURL = req.body.longURL;
+  if (!longURL) {
+    return res.status(400).send('URL is required.');
+  }
+
   const id = generateRandomString();
-  urlDatabase[id] = longURL;
+  urlDatabase[id] = { longURL, userID: userId};
   res.redirect(`/urls/${id}`);
 });
 
@@ -196,6 +207,10 @@ app.post('/logout', (req, res) => {
 
 // First post request catch all behavior
 app.post('/urls/:id', (req, res) => {
+  const user = users[req.cookies['user_id']];
+  if (!user){
+    return res.redirect(`/login`);
+  };
   const id = req.params.id;
   urlDatabase[id] = req.body.longURL;
   res.redirect(`/urls/${id}`);
@@ -205,6 +220,10 @@ app.post('/urls/:id', (req, res) => {
 
 // Post request catch all delete button behavior
 app.post('/urls/:id/delete', (req, res) => {
+  const user = users[req.cookies['user_id']];
+  if (!user){
+    return res.redirect(`/login`);
+  };
   const urlID = req.params.id;
   delete urlDatabase[urlID];
   res.redirect(`/urls`);
