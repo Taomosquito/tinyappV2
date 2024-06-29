@@ -1,10 +1,15 @@
 // Imports and other setup constants
 const express = require('express');
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
+// sample hashing use for implementation later in code.
+const password = "purple-monkey-dinosaur"; // find actual in the req.body object
+const hashedPasswordExample = bcrypt.hashSync(password, 10);
+bcrypt.compareSync("purple-monkey-dinosaur", hashedPasswordExample); // returns true
 
 
 // shortened url functionality implemented here
@@ -56,12 +61,12 @@ const users = {
   ADMIN: {
     id: "ADMIN",
     email: "a.a@a.a",
-    password: "admin",
+    hashedPassword: bcrypt.hashSync('admin', 10) //
   },
   admin2: {
     id: "admin2",
     email: "b.b@b.b",
-    password: "admin2",
+    hashedPassword: bcrypt.hashSync('admin2', 10) //
   }
 };
 
@@ -78,15 +83,15 @@ const getUserByEmail = (email) => {
 };
 
 // Function to validate user credentials
-const validateUserCredentials = (email, password, users) => {
+const validateUserCredentials = (email, password, users, hashedPassword) => {
   const user = getUserByEmail(email, users);
   if (!user) {
     return { isValid: false, error: "Invalid Username or password" };
   }
-  if (user.password !== password) {
-    return { isValid: false, error: "Invalid Username or password" };
+  if (bcrypt.compareSync(password, hashedPassword)) {
+    return { isValid: true, user };
   }
-  return { isValid: true, user };
+  return { isValid: false, error: "Invalid Username or password" };
 };
 
 
@@ -186,8 +191,10 @@ app.post('/register', (req, res) => {
     return res.status(400).send('Account Already Exists');
   }
 
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  
   const id = generateRandomString();
-  users[id] = { id, email, password, };
+  users[id] = { id, email, hashedPassword, };
   res.cookie('user_id', id);
   res.redirect('/urls');
 });
@@ -252,8 +259,13 @@ app.post('/urls/:id/delete', (req, res) => {
 // Handle POST requests to /login
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-  const { isValid, error, user } = validateUserCredentials(email, password, users);
+  const user = getUserByEmail(email, users);
+  const storedHashedPassword = user.hashedPassword;
 
+  if (!user) {
+    return res.status(403).send("Invalid Username or password");
+  }
+  const { isValid, error } = validateUserCredentials(email, password, users, storedHashedPassword);
   if (!isValid) {
     return res.status(403).send(error);
   }
