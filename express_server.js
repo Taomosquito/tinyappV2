@@ -27,17 +27,34 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // Memory based URL Management database (only shows the precoded URLS here)
+
 const urlDatabase = {
-  b2xVn2: 'http://www.lighthouselabs.ca',
-  '9sm5xK': "http://www.google.com",
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "ADMIN",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "ADMIN",
+  },
+};
+
+const urlsForUser = (id) => {
+  let userURLs = {};
+  for (let urlID in urlDatabase) {
+    if (urlDatabase[urlID].userID === id) {
+      userURLs[urlID] = urlDatabase[urlID];
+    }
+  }
+  return userURLs;
 };
 
 
 
 // Memory based registered users database (only shows the precoded users {Admin users is good here})
 const users = {
-  admin: {
-    id: "admin",
+  ADMIN: {
+    id: "ADMIN",
     email: "a.a@a.a",
     password: "admin",
   },
@@ -95,15 +112,16 @@ app.get('/hello', (req, res) => {
 
 
 // What do to when the sites primary resource received a get request through this route handler
-app.get('/urls', (req, res) => {
-  const { user_id } = req.cookies;
-  if (!users[user_id]) {
-    return res.redirect('/register');
+app.get("/urls", (req, res) => {
+  // const userID = req.session.user_id; // Assuming you're using session cookies
+  const userID = req.cookies.user_id;  
+  if (!userID) {
+  return res.status(403).send("You must be logged in to view URLs.");
   }
-  const templateVars = { user: users[user_id], urls: urlDatabase };
-  res.render('urls_index', templateVars);
+  const userURLs = urlsForUser(userID);
+  const templateVars = { urls: userURLs, user: users[userID] };
+  res.render("urls_index", templateVars);
 });
-
 
 
 // What to do when the new route link is selected
@@ -120,7 +138,7 @@ app.get('/urls/new', (req, res) => {
 
 // Get request redirection to the actual link
 app.get('/u/:id', (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   res.redirect(longURL);
 });
 
@@ -133,7 +151,7 @@ app.get('/urls/:id', (req, res) => {
     return res.redirect('/register');
   }
   const id = req.params.id;
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   res.render('urls_show', { longURL, id, user: users[user_id] });
 });
 
@@ -239,7 +257,6 @@ app.post('/login', (req, res) => {
   if (!isValid) {
     return res.status(403).send(error);
   }
-
   res.cookie('user_id', user.id);
   res.redirect('/urls');
 });

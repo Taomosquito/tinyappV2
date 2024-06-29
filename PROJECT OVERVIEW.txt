@@ -1,0 +1,37 @@
+OVERVIEW OF PROJECT FOR QUICK FUNCTION TALLY
+    *** files
+      **** _header.ejs // this renders the header bar and handles some related logic
+      **** urls_index.ejs // main urls page rendering
+      **** urls_new.ejs // new urls page rendering
+      **** urls_show.ejs // url editing page rendering
+      **** express_server.js // server files
+      **** login.ejs // login page rendering
+      **** register.ejs // register page rendering
+    *** routes overview
+      **** GET routes
+        ***** '/'
+        ***** '/urls.json'
+        ***** '/hello'
+        ***** '/urls'
+        ***** '/urls/new'
+        ***** '/u/:id'
+        ***** '/urls/:id'
+        ***** '/register'
+        ***** '/login'
+      **** POST routes
+        ***** '/urls/:id/delete'
+        ***** '/logout
+        ***** '/urls'
+        ***** '/urls/:id'
+        ***** '/register'
+        ***** '/login'
+    *** helper functions
+      **** generateRandomString
+      **** getUserByEmail
+      **** validateUserCredentials
+    *** system structures
+      **** objects
+        ***** urlDatabase
+        ***** users
+    *** node functions
+      **** listens on port 8080.
