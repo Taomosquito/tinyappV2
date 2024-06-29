@@ -3,13 +3,16 @@ const express = require('express');
 const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
+const cookieSession = require('cookie-session')
 const cookieParser = require('cookie-parser');
-app.use(cookieParser());
 
-// sample hashing use for implementation later in code.
-const password = "purple-monkey-dinosaur"; // find actual in the req.body object
-const hashedPasswordExample = bcrypt.hashSync(password, 10);
-bcrypt.compareSync("purple-monkey-dinosaur", hashedPasswordExample); // returns true
+app.use(cookieSession({
+  name: 'session',
+  keys: ['s1e2s3s4i5o6n7'], // '1s2e3s4s5i6o7n', '7n6o5i4s3s2e1s', 'n7o6i5s4s3e2s1'],
+
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
+app.use(cookieParser());
 
 
 // shortened url functionality implemented here
@@ -117,9 +120,8 @@ app.get('/hello', (req, res) => {
 
 
 // What do to when the sites primary resource received a get request through this route handler
-app.get("/urls", (req, res) => {
-  // const userID = req.session.user_id; // Assuming you're using session cookies
-  const userID = req.cookies.user_id;  
+app.get('/urls', (req, res) => {
+  const userID = req.session.user_id
   if (!userID) {
   return res.status(403).send("You must be logged in to view URLs.");
   }
@@ -131,7 +133,7 @@ app.get("/urls", (req, res) => {
 
 // What to do when the new route link is selected
 app.get('/urls/new', (req, res) => {
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   if (!users[user_id]) {
     return res.redirect('/register');
   }
@@ -151,7 +153,7 @@ app.get('/u/:id', (req, res) => {
 
 // Used with the get request for edit
 app.get('/urls/:id', (req, res) => {
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   if (!users[user_id]) {
     return res.redirect('/register');
   }
@@ -164,7 +166,7 @@ app.get('/urls/:id', (req, res) => {
 
 // Makes the registration page available
 app.get('/register', (req, res) => {
-  const user = users[req.cookies['user_id']];
+  const user = users[req.session.user_id];
   const templateVars = { user };
   res.render('register', templateVars);
 });
@@ -172,7 +174,7 @@ app.get('/register', (req, res) => {
 
 // Handles the login route
 app.get('/login', (req, res) => {
-  const user = users[req.cookies['user_id']];
+  const user = users[req.session.user_id];
   const templateVars = { user };
   res.render('login', templateVars);
 });
@@ -195,7 +197,7 @@ app.post('/register', (req, res) => {
   
   const id = generateRandomString();
   users[id] = { id, email, hashedPassword, };
-  res.cookie('user_id', id);
+  req.session.user_id = users[id].id;
   res.redirect('/urls');
 });
 
@@ -203,7 +205,7 @@ app.post('/register', (req, res) => {
 
 // Handle POST requests to /urls
 app.post('/urls', (req, res) => {
-  const userId = req.cookies['user_id'];
+  const userId = req.session.user_id;
 
   if (!userId || !users[userId]) {
     console.log('User is not authenticated, redirecting to login');
@@ -232,7 +234,7 @@ app.post('/logout', (req, res) => {
 
 // First post request catch all behavior
 app.post('/urls/:id', (req, res) => {
-  const user = users[req.cookies['user_id']];
+  const user = users[req.session.user_id];
   if (!user){
     return res.redirect(`/login`);
   };
@@ -245,7 +247,7 @@ app.post('/urls/:id', (req, res) => {
 
 // Post request catch all delete button behavior
 app.post('/urls/:id/delete', (req, res) => {
-  const user = users[req.cookies['user_id']];
+  const user = users[req.session.user_id];
   if (!user){
     return res.redirect(`/login`);
   };
@@ -259,17 +261,17 @@ app.post('/urls/:id/delete', (req, res) => {
 // Handle POST requests to /login
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-  const user = getUserByEmail(email, users);
-  const storedHashedPassword = user.hashedPassword;
+  const user1 = getUserByEmail(email, users);
+  const storedHashedPassword = user1.hashedPassword;
 
-  if (!user) {
+  if (!user1) {
     return res.status(403).send("Invalid Username or password");
   }
   const { isValid, error } = validateUserCredentials(email, password, users, storedHashedPassword);
   if (!isValid) {
     return res.status(403).send(error);
   }
-  res.cookie('user_id', user.id);
+  req.session.user_id = user1.id;
   res.redirect('/urls');
 });
 
