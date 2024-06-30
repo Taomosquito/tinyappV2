@@ -10,6 +10,12 @@ TinyApp is a full stack web application built with Node and Express that allows 
 * This consists of a partials directory and a file within call _header.ejs this is used in conjunction with each of the three views files
 * This doesn't include any CSS outside of the templated CSS or a database engine so all URLs are removed on server reboot.
 
+#### Screenshots of Application In Use
+!["Screenshot of URLs page"] // fill in the url of the image in the folllowing format (https://github.com/lighthouse-labs/tinyapp/blob/master/docs/register-page.png)
+!["Screenshot of register page"]fill in the url of the image in the folllowing format (https://github.com/lighthouse-labs/tinyapp/blob/master/docs/register-page.png)
+!["Screenshot of login page"]fill in the url of the image in the folllowing format (https://github.com/lighthouse-labs/tinyapp/blob/master/docs/register-page.png)
+!["Screenshot of newURLs page"]fill in the url of the image in the folllowing format (https://github.com/lighthouse-labs/tinyapp/blob/master/docs/register-page.png)
+
 ## Dependencies
 
 - Node.js
