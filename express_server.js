@@ -1,11 +1,16 @@
 // Imports and other setup constants
 const express = require('express');
-const bcrypt = require("bcryptjs");
+const bcrypt  = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieSession = require('cookie-session')
 const cookieParser = require('cookie-parser');
-const getUserByEmail = require('./helpers');
+const  { 
+  getUserByEmail, 
+  validateUserCredentials, 
+  generateRandomString, 
+  urlsForUser
+ } = require('./helpers');
 
 app.use(cookieSession({
   name: 'session',
@@ -16,18 +21,6 @@ app.use(cookieSession({
 app.use(cookieParser());
 
 
-// shortened url functionality implemented here
-const generateRandomString = () => {
-  let newString = '';
-  const alphaNumeric = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i2 = 0; i2 < 6; i2++) {
-    const randomIndex = Math.floor(Math.random() * alphaNumeric.length);
-    newString += alphaNumeric[randomIndex];
-  }
-  return newString;
-};
-
-
 
 // Sets up resource usage framework such as using ejs over html and ensuring express is human readable
 app.set('view engine', 'ejs');
@@ -36,7 +29,6 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // Memory based URL Management database (only shows the precoded URLS here)
-
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -46,16 +38,6 @@ const urlDatabase = {
     longURL: "https://www.google.ca",
     userID: "ADMIN",
   },
-};
-
-const urlsForUser = (id) => {
-  let userURLs = {};
-  for (let urlID in urlDatabase) {
-    if (urlDatabase[urlID].userID === id) {
-      userURLs[urlID] = urlDatabase[urlID];
-    }
-  }
-  return userURLs;
 };
 
 
@@ -74,17 +56,6 @@ const users = {
   }
 };
 
-// Function to validate user credentials
-const validateUserCredentials = (email, password, users, hashedPassword) => {
-  const user = getUserByEmail(email, users);
-  if (!user) {
-    return { isValid: false, error: "Invalid Username or password" };
-  }
-  if (bcrypt.compareSync(password, hashedPassword)) {
-    return { isValid: true, user };
-  }
-  return { isValid: false, error: "Invalid Username or password" };
-};
 
 
 // Home route and subsequently not the one controlling the primary functionality
@@ -114,7 +85,7 @@ app.get('/urls', (req, res) => {
   if (!userID) {
   return res.status(403).send("You must be logged in to view URLs.");
   }
-  const userURLs = urlsForUser(userID);
+  const userURLs = urlsForUser(userID, urlDatabase);
   const templateVars = { urls: userURLs, user: users[userID] };
   res.render("urls_index", templateVars);
 });
