@@ -11,10 +11,10 @@ TinyApp is a full stack web application built with Node and Express that allows 
 * This doesn't include any CSS outside of the templated CSS or a database engine so all URLs are removed on server reboot.
 
 #### Screenshots of Application In Use
-!["Screenshot of URLs page"] // fill in the url of the image in the folllowing format (https://github.com/lighthouse-labs/tinyapp/blob/master/docs/register-page.png)
-!["Screenshot of register page"]fill in the url of the image in the folllowing format (https://github.com/lighthouse-labs/tinyapp/blob/master/docs/register-page.png)
-!["Screenshot of login page"]fill in the url of the image in the folllowing format (https://github.com/lighthouse-labs/tinyapp/blob/master/docs/register-page.png)
-!["Screenshot of newURLs page"]fill in the url of the image in the folllowing format (https://github.com/lighthouse-labs/tinyapp/blob/master/docs/register-page.png)
+!["Screenshot of URLs page"](https://github.com/Taomosquito/tinyappV2/blob/main/images/urlsScreen.png)
+!["Screenshot of register page"](https://github.com/Taomosquito/tinyappV2/blob/main/images/registrationScreen.png)
+!["Screenshot of login page"](https://github.com/Taomosquito/tinyappV2/blob/main/images/loginScreen.png)
+!["Screenshot of newURLs page"](https://github.com/Taomosquito/tinyappV2/blob/main/images/newUrlScreen.png)
 
 ## Dependencies
 
