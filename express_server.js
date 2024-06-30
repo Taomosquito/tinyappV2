@@ -14,7 +14,7 @@ const  {
 
 app.use(cookieSession({
   name: 'session',
-  keys: ['s1e2s3s4i5o6n7'], // '1s2e3s4s5i6o7n', '7n6o5i4s3s2e1s', 'n7o6i5s4s3e2s1'],
+  keys: ['s1e2s3s4i5o6n7'],
 
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
