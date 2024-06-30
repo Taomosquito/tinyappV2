@@ -5,6 +5,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const cookieSession = require('cookie-session')
 const cookieParser = require('cookie-parser');
+const getUserByEmail = require('./helpers');
 
 app.use(cookieSession({
   name: 'session',
@@ -70,18 +71,6 @@ const users = {
     id: "admin2",
     email: "b.b@b.b",
     hashedPassword: bcrypt.hashSync('admin2', 10) //
-  }
-};
-
-
-
-// Helper Function That does what the name states
-const getUserByEmail = (email) => {
-  for (let userID in users) {
-
-    if (users[userID].email === email) {
-      return users[userID];
-    }
   }
 };
 
@@ -226,7 +215,7 @@ app.post('/urls', (req, res) => {
 
 // Handle POST requests to /logout
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect("/login");
 });
 
@@ -262,11 +251,11 @@ app.post('/urls/:id/delete', (req, res) => {
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const user1 = getUserByEmail(email, users);
-  const storedHashedPassword = user1.hashedPassword;
-
+  
   if (!user1) {
     return res.status(403).send("Invalid Username or password");
   }
+  const storedHashedPassword = user1.hashedPassword;
   const { isValid, error } = validateUserCredentials(email, password, users, storedHashedPassword);
   if (!isValid) {
     return res.status(403).send(error);
