@@ -1,16 +1,17 @@
 // Imports and other setup constants
 const express = require('express');
-const bcrypt  = require("bcryptjs");
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const cookieParser = require('cookie-parser');
-const  { 
-  getUserByEmail, 
-  validateUserCredentials, 
-  generateRandomString, 
+const {
+  getUserByEmail,
+  validateUserCredentials,
+  generateRandomString,
   urlsForUser
- } = require('./helpers');
+} = require('./helpers');
+const { users, urlDatabase } = require('./inMemDatabases');
 
 app.use(cookieSession({
   name: 'session',
@@ -28,39 +29,15 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-// Memory based URL Management database (only shows the precoded URLS here)
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "ADMIN",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "ADMIN",
-  },
-};
-
-
-
-// Memory based registered users database (only shows the precoded users {Admin users is good here})
-const users = {
-  ADMIN: {
-    id: "ADMIN",
-    email: "a.a@a.a",
-    hashedPassword: bcrypt.hashSync('admin', 10) //
-  },
-  admin2: {
-    id: "admin2",
-    email: "b.b@b.b",
-    hashedPassword: bcrypt.hashSync('admin2', 10) //
-  }
-};
-
-
-
 // Home route and subsequently not the one controlling the primary functionality
 app.get('/', (req, res) => {
-  res.send('Hello!');
+  const userId = req.session.user_id;
+
+  if (!userId || !users[userId]) {
+    console.log('User is not authenticated, redirecting to login');
+    return res.redirect('/login');
+  }
+  res.redirect('/urls');
 });
 
 
@@ -81,9 +58,9 @@ app.get('/hello', (req, res) => {
 
 // What do to when the sites primary resource received a get request through this route handler
 app.get('/urls', (req, res) => {
-  const userID = req.session.user_id
+  const userID = req.session.user_id;
   if (!userID) {
-  return res.status(403).send("You must be logged in to view URLs.");
+    return res.status(403).render('error', { errorVar: "You must be logged in to view URLs." });
   }
   const userURLs = urlsForUser(userID, urlDatabase);
   const templateVars = { urls: userURLs, user: users[userID] };
@@ -147,14 +124,14 @@ app.post('/register', (req, res) => {
   if (!email || !password) {
     return res.status(400).send('Incomplete Registration Such As Missing Email Or Password');
   }
-  
+
   const userExists = getUserByEmail(email);
   if (userExists) {
     return res.status(400).send('Account Already Exists');
   }
 
   const hashedPassword = bcrypt.hashSync(password, 10);
-  
+
   const id = generateRandomString();
   users[id] = { id, email, hashedPassword, };
   req.session.user_id = users[id].id;
@@ -178,7 +155,7 @@ app.post('/urls', (req, res) => {
   }
 
   const id = generateRandomString();
-  urlDatabase[id] = { longURL, userID: userId};
+  urlDatabase[id] = { longURL, userID: userId };
   res.redirect(`/urls/${id}`);
 });
 
@@ -195,7 +172,7 @@ app.post('/logout', (req, res) => {
 // First post request catch all behavior
 app.post('/urls/:id', (req, res) => {
   const user = users[req.session.user_id];
-  if (!user){
+  if (!user) {
     return res.redirect(`/login`);
   };
   const id = req.params.id;
@@ -208,7 +185,7 @@ app.post('/urls/:id', (req, res) => {
 // Post request catch all delete button behavior
 app.post('/urls/:id/delete', (req, res) => {
   const user = users[req.session.user_id];
-  if (!user){
+  if (!user) {
     return res.redirect(`/login`);
   };
   const urlID = req.params.id;
@@ -222,7 +199,7 @@ app.post('/urls/:id/delete', (req, res) => {
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const user1 = getUserByEmail(email, users);
-  
+
   if (!user1) {
     return res.status(403).send("Invalid Username or password");
   }
