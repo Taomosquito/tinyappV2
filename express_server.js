@@ -32,7 +32,6 @@ app.get('/', (req, res) => {
   const userId = req.session.user_id;
 
   if (!userId || !users[userId]) {
-    console.log('User is not authenticated, redirecting to login');
     return res.redirect('/login');
   }
 
@@ -186,9 +185,8 @@ app.post('/urls/:id', (req, res) => {
   if (!user) {
     return res.redirect(`/login`);
   };
-
   const id = req.params.id;
-  urlDatabase[id] = req.body.longURL;
+  urlDatabase[id].longURL = req.body.longURL;;
   res.redirect(`/urls/${id}`);
 });
 
