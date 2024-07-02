@@ -4,7 +4,6 @@ const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieSession = require('cookie-session');
-const cookieParser = require('cookie-parser');
 const {
   getUserByEmail,
   validateUserCredentials,
@@ -19,7 +18,6 @@ app.use(cookieSession({
 
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
-app.use(cookieParser());
 
 
 
@@ -37,6 +35,7 @@ app.get('/', (req, res) => {
     console.log('User is not authenticated, redirecting to login');
     return res.redirect('/login');
   }
+
   res.redirect('/urls');
 });
 
@@ -60,8 +59,9 @@ app.get('/hello', (req, res) => {
 app.get('/urls', (req, res) => {
   const userID = req.session.user_id;
   if (!userID) {
-    return res.status(403).render('error', { errorVar: "You must be logged in to view URLs." });
+    return res.status(403).send("You must be logged in to view URLs.");
   }
+
   const userURLs = urlsForUser(userID, urlDatabase);
   const templateVars = { urls: userURLs, user: users[userID] };
   res.render("urls_index", templateVars);
@@ -74,15 +74,21 @@ app.get('/urls/new', (req, res) => {
   if (!users[user_id]) {
     return res.redirect('/register');
   }
+
   const templateVars = { user: users[user_id], urls: urlDatabase };
   res.render('urls_new', templateVars);
 });
 
 
 
-// Get request redirection to the actual link
 app.get('/u/:id', (req, res) => {
-  const longURL = urlDatabase[req.params.id].longURL;
+  const id = req.params.id;
+  const url = urlDatabase[id];
+  if (!url) {
+    return res.send('Url not found');
+  }
+
+  const longURL = url.longURL;
   res.redirect(longURL);
 });
 
@@ -90,11 +96,17 @@ app.get('/u/:id', (req, res) => {
 
 // Used with the get request for edit
 app.get('/urls/:id', (req, res) => {
+  const id = req.params.id;
+  const url = urlDatabase[id];
+  if (!url) {
+    return res.send('Url not found');
+  }
+
   const { user_id } = req.session;
   if (!users[user_id]) {
-    return res.redirect('/register');
+    return res.send("You must be logged in to view URLs.");
   }
-  const id = req.params.id;
+
   const longURL = urlDatabase[req.params.id].longURL;
   res.render('urls_show', { longURL, id, user: users[user_id] });
 });
@@ -125,7 +137,7 @@ app.post('/register', (req, res) => {
     return res.status(400).send('Incomplete Registration Such As Missing Email Or Password');
   }
 
-  const userExists = getUserByEmail(email);
+  const userExists = getUserByEmail(email, users);
   if (userExists) {
     return res.status(400).send('Account Already Exists');
   }
@@ -145,8 +157,7 @@ app.post('/urls', (req, res) => {
   const userId = req.session.user_id;
 
   if (!userId || !users[userId]) {
-    console.log('User is not authenticated, redirecting to login');
-    return res.redirect('/login');
+    return res.send('User is not authenticated, redirect to login');
   }
 
   const longURL = req.body.longURL;
@@ -175,6 +186,7 @@ app.post('/urls/:id', (req, res) => {
   if (!user) {
     return res.redirect(`/login`);
   };
+
   const id = req.params.id;
   urlDatabase[id] = req.body.longURL;
   res.redirect(`/urls/${id}`);
@@ -188,6 +200,7 @@ app.post('/urls/:id/delete', (req, res) => {
   if (!user) {
     return res.redirect(`/login`);
   };
+
   const urlID = req.params.id;
   delete urlDatabase[urlID];
   res.redirect(`/urls`);
@@ -203,11 +216,13 @@ app.post('/login', (req, res) => {
   if (!user1) {
     return res.status(403).send("Invalid Username or password");
   }
+
   const storedHashedPassword = user1.hashedPassword;
   const { isValid, error } = validateUserCredentials(email, password, users, storedHashedPassword);
   if (!isValid) {
     return res.status(403).send(error);
   }
+
   req.session.user_id = user1.id;
   res.redirect('/urls');
 });
